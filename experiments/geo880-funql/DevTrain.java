@@ -21,6 +21,8 @@ import tom_kwiatkowski.ubl.learn.*;
 import tom_kwiatkowski.ubl.lambda.*;
 import tom_kwiatkowski.ubl.parser.*;
 
+import java.io.*;
+
 public class DevTrain extends Train {
 
     public static void main(String[] args){
@@ -43,7 +45,7 @@ public class DevTrain extends Train {
 	    fixed.addEntriesFromFile(fixedlex,true);
 	}
 
-	Train.EPOCHS=20;
+	Train.EPOCHS=1;
 	Train.alpha_0 = 1.0;
 	Train.c = 0.00001;
 	Train.maxSentLen=50;
@@ -71,6 +73,15 @@ public class DevTrain extends Train {
 	Train.verbose = true;
 	t.stocGradTrain(p,true);		
 	t.test(p,true);
+
+  try {
+    String lexicon = fixed.toStringWithScores();
+    BufferedWriter writer = new BufferedWriter(new FileWriter("lexicon.txt", true));
+    writer.write(lexicon);
+    writer.close();
+  } catch (IOException e) {
+    System.err.println("Could not write lexicon.");
+  }
 
     }
 }

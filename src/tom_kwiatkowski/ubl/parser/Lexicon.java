@@ -224,9 +224,6 @@ public class Lexicon {
 		System.out.println("]");
 	}
 
-
-
-
 	public String toString(){
 		StringBuffer result = new StringBuffer();
 		Iterator i = lexicon.iterator();
@@ -235,6 +232,22 @@ public class Lexicon {
 		}
 		return result.toString();
 	}
+
+  public String toStringWithScores() {
+    StringBuffer result = new StringBuffer();
+    Iterator i = lexicon.iterator();
+    while (i.hasNext()) {
+      LexEntry le = (LexEntry) i.next();
+      int index = Globals.lexPhi.indexOf(le);
+      result.append(le);
+      if (index!=-1) result.append(" # " + Globals.theta.get("LEX:"+index));
+
+      result.append("\n");
+    }
+
+    return result.toString();
+  }
+
 	/**
 	 * REP EXPOSURE: Why are we exposing the lexicon this way? 
 	 **/
