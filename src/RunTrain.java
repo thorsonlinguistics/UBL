@@ -20,6 +20,7 @@ import tom_kwiatkowski.ubl.lambda.*;
 import tom_kwiatkowski.ubl.parser.*;
 
 import java.io.*;
+import java.util.HashMap;
 
 // Arguments
 // --lf=funql
@@ -36,89 +37,90 @@ import java.io.*;
 // --multiplier=10.0
 // --lexiconweight=10.0
 // --prune=200
+class Config {
+  public String typeFile = "geo-lambda.types";
+  public String langFile = "geo-lambda.lang";
+  public String trainFile = "data/geosents600-funql.ccg.dev.train.";
+  public String testFile = "data/geosents600-funql.ccg.dev.test.";
+  public String gizaFile = "data/geo-funql.dev.giza_probs";
+  public String outputFile = "lexicon.txt";
+  public String fixedlex = "none";
+  public int splitNum = 1;
+  public int epochs = 1;
+  public double alpha = 1.0;
+  public double c = 0.00001;
+  public int maxSentLength = 50;
+  public double initWeightMultiplier = 10.0;
+  public double initLexWeight = 10.0;
+  public int pruneN = 200;
 
-public class RunTrain extends Train {
-  public class Config {
-    public String typeFile = "geo-lambda.types";
-    public String langFile = "geo-lambda.lang";
-    public String trainFile = "data/geosents600-funql.ccg.dev.train.";
-    public String testFile = "data/geosents600-funql.ccg.dev.test.";
-    public String gizaFile = "data/geo-funql.dev.giza_probs";
-    public String outputFile = "lexicon.txt";
-    public String fixedlex = "none";
-    public int splitNum = 1;
-    public int epochs = 1;
-    public float alpha = 1.0;
-    public float c = 0.00001;
-    public int maxSentLength = 50;
-    public float initWeightMultiplier = 10.0;
-    public float initLexWeight = 10.0;
-    public int pruneN = 200;
+  public Config() { }
 
-    public Config() { }
+  public Config(HashMap<String, String> arguments) {
+    String lf = arguments.getOrDefault("--lf", "funql");
+    String corpus = arguments.getOrDefault("--corpus", "geo880");
+    String root = arguments.getOrDefault("--root", 
+        "experiments/" + corpus + "-" + lf + "/");
+    String splitString = arguments.getOrDefault("--split", "1");
+    splitNum = Integer.parseInt(splitString);
+    if (lf == "funql") {
+      gizaFile = arguments.getOrDefault("--probs", 
+          root + "data/geo-funql.dev.giza_probs");
+    } else {
+      gizaFile = arguments.getOrDefault("--probs",
+          root + "data/geo600.dev.giza_probs");
+    }
+    outputFile = arguments.getOrDefault("--output", "lexicon.txt");
+    fixedlex = arguments.getOrDefault("--fixedlex", "none");
+    String epochString = arguments.getOrDefault("--epochs", "20");
+    epochs = Integer.parseInt(epochString);
+    String alphaString = arguments.getOrDefault("--alpha", "1.0");
+    alpha = Double.parseDouble(alphaString);
+    String cString = arguments.getOrDefault("--c", "0.00001");
+    c = Double.parseDouble(cString);
+    String maxlenString = arguments.getOrDefault("--maxlen", "50");
+    maxSentLength = Integer.parseInt(maxlenString);
+    String multiplierString = arguments.getOrDefault("--multiplier", "10.0");
+    initWeightMultiplier = Double.parseDouble(multiplierString);
+    String weightString = arguments.getOrDefault("--lexiconweight", "10.0");
+    initLexWeight = Double.parseDouble(weightString);
+    String pruneString = arguments.getOrDefault("--prune", "200");
+    pruneN = Integer.parseInt(pruneString);
 
-    public Config(Map<String, String> arguments) {
-      String lf = arguments.get_or_default("--lf", "funql");
-      String corpus = arguments.get_or_default("--corpus", "geo880");
-      String root = arguments.get_or_default("--root", 
-          "experiments/" + corpus + "-" + lf + "/");
-      String splitString = arguments.get("--split", "1");
-      split = Integer.parseInt(splitString);
-      if lf == "funql" {
-        gizaFile = arguments.get("--probs", 
-            root + "data/geo-funql.dev.giza_probs");
-      } else {
-        gizaFile = arguments.get("--probs",
-            root + "data/geo600.dev.giza_probs");
-      }
-      outputFile = arguments.get("--output", "lexicon.txt");
-      fixedlex = arguments.get("--fixedlex", "none");
-      String epochString = arguments.get("--epochs", "20");
-      epochs = Integer.parseInt(epochString);
-      String alphaString = arguments.get("--alpha", "1.0");
-      alpha = Float.parseFloat(alphaString);
-      String cString = arguments.get("--c", "0.00001");
-      c = Float.parseFloat(cString);
-      String maxlenString = arguments.get("--maxlen", "50");
-      maxSentLength = Integer.parseInt(maxlenString);
-      String multiplierString = arguments.get("--multiplier", "10.0");
-      initWeightMultiplier = Float.parseFloat(multiplierString);
-      String weightString = arguments.get("--lexiconweight", "10.0");
-      initLexWeight = Float.parseFloat(weighString);
-      String pruneString = arguments.get("--prune", "200");
-      pruneN = Integer.parseInt(pruneString);
+    if (lf == "funql") {
+      typeFile = root + "geo-funql.types";
+      langFile = root + "geo-funql.lang";
+    } else {
+      typeFile = root + "geo-lambda.types";
+      langFile = root + "geo-lambda.lang";
+    }
 
-      if lf == "funql" {
-        typeFile = root + "geo-funql.types";
-        langFile = root + "geo-funql.lang";
-      } else {
-        typeFile = root + "geo-lambda.types";
-        langFile = root + "geo-lambda.lang";
-      }
-
-      if task == "dev" && lf == "funql" {
-        trainFile = root + "data/geosents600-funql.ccg.dev.train." + split;
-        testFile = root + "data/geosents600-funql.ccg.dev.test." + split;
-      } else if task == "test" && lf == "funql" {
-        trainFile = root + "data/geo880-funql.train";
-        testFile = root + "data/geo880-funql.test";
-      } else if task == "dev" && lf == "lambda" {
-        trainFile = root + "data/geosents600-typed.ccg.dev.train." + split;
-        testFile = root + "data/geosents600-typed.ccg.dev.test." + split;
-      } else {
-        trainFile = root + "data/geosents600-typed.ccg.dev";
-        testFile = root + "data/geosents280-typed.ccg.test";
-      }
+    String task = arguments.getOrDefault("--task", "dev");
+    if (task == "dev" && lf == "funql") {
+      trainFile = root + "data/geosents600-funql.ccg.dev.train." + splitNum;
+      testFile = root + "data/geosents600-funql.ccg.dev.test." + splitNum;
+    } else if (task == "test" && lf == "funql") {
+      trainFile = root + "data/geo880-funql.train";
+      testFile = root + "data/geo880-funql.test";
+    } else if (task == "dev" && lf == "lambda") {
+      trainFile = root + "data/geosents600-typed.ccg.dev.train." + splitNum;
+      testFile = root + "data/geosents600-typed.ccg.dev.test." + splitNum;
+    } else {
+      trainFile = root + "data/geosents600-typed.ccg.dev";
+      testFile = root + "data/geosents280-typed.ccg.test";
     }
   }
+}
+
+public class RunTrain extends Train {
 
   public static void main(String[] args) {
-    Map<String, String> argMap = new HashMap<>();
+    HashMap<String, String> argMap = new HashMap<>();
     for (String arg: args) {
       String[] parts = arg.split("=");
       argMap.put(parts[0], parts[1]);
     }
-    Config config = Config(argMap);
+    Config config = new Config(argMap);
 
     PType.addTypesFromFile(config.typeFile);
     Lang.loadLangFromFile(config.langFile);
