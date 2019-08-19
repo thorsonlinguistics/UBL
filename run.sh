@@ -1,1 +1,1 @@
-java -classpath src RunTrain
+java -classpath src RunTrain $@

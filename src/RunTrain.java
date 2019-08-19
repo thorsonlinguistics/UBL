@@ -22,21 +22,6 @@ import tom_kwiatkowski.ubl.parser.*;
 import java.io.*;
 import java.util.HashMap;
 
-// Arguments
-// --lf=funql
-// --corpus=geo880
-// --root=experiments/
-// --task=test
-// --split=1
-// --probs=data/geo-funql.dev.giza_probs
-// --output=lexicon.txt
-// --epochs=1
-// --alpha=1.0
-// --c=0.00001
-// --maxlen=50
-// --multiplier=10.0
-// --lexiconweight=10.0
-// --prune=200
 class Config {
   public String typeFile = "geo-lambda.types";
   public String langFile = "geo-lambda.lang";
